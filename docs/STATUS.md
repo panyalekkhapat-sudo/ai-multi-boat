@@ -23,7 +23,7 @@ Updated by: OpenCode
 ## In progress
 
 - เจ้าของรีวิว D1–D12 และแก้คำตัดสินถ้ายังไม่ตรงใจ
-- (สถานะเดิม "รอ commit งาน Lab 05" เลิกแล้ว — commit ใน `381cb0e` บน branch `lab-05-backend` · PR draft เปิดแล้ว)
+- (สถานะเดิม "รอ commit งาน Lab 05" เลิกแล้ว — commit ใน `381cb0e` บน branch `lab-05-backend` · Draft PR #6 เปิดแล้ว: https://github.com/panyalekkhapat-sudo/ai-multi-boat/pull/6)
 
 ## Blocked
 
