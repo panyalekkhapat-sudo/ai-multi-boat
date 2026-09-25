@@ -15,4 +15,6 @@ Input: docs/PROFILE.md
 
 อย่าเขียนโค้ด Astro
 อย่าใส่ความลับ
+
+จำเป็นต้องบันทึก Persistant Memory ของแต่ละ Agents เพื่อใช้ใน Session ถัด
 ```
