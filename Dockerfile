@@ -20,7 +20,8 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
-COPY docs ./docs
+# Only the public profile — never DEBATE / DECISIONS / Brainstorm notes (D12)
+COPY docs/PROFILE.md ./docs/PROFILE.md
 RUN mkdir -p /data
 VOLUME ["/data"]
 EXPOSE 4321
