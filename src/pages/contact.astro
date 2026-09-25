@@ -1,43 +1,98 @@
 ---
+// Contact (D3 · D5 · D6 · issues #2, #3): real mailto first, never a dead end.
+// The form is secondary: on 501/500/network it shows a fixed message and keeps
+// what the visitor typed. err.message from the API is never rendered.
+// `topic` is sent as an extra JSON field — backend may store or ignore it (Lab 05).
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { loadProfile } from '../lib/profile';
+const profile = loadProfile();
+const { email, github, linkedin } = profile.contact;
+const topics = ['ร่วมทีม', 'โปรเจกต์', 'เริ่มเรียนเขียนเว็บ', 'อื่น ๆ'];
 ---
-<BaseLayout title="Contact">
+<BaseLayout title={`ติดต่อ · ${profile.name}`} description={profile.headline}>
   <section class="card">
-    <h1>Contact</h1>
-    <p>ฟอร์มนี้โพสต์ไปที่ <code>POST /api/contact</code></p>
-    <form id="contact-form">
-      <label for="name">Name</label>
-      <input id="name" name="name" required maxlength="80" />
-      <label for="email">Email</label>
-      <input id="email" name="email" type="email" required maxlength="120" />
-      <label for="message">Message</label>
+    <h1>ติดต่อ</h1>
+    {email ? (
+      <>
+        <p class="lead">ส่งอีเมลมาได้เลยครับ</p>
+        <p><a class="btn" href={`mailto:${email}`}>{email}</a></p>
+      </>
+    ) : (
+      <p class="lead">ส่งข้อความผ่านฟอร์มด้านล่างได้เลยครับ</p>
+    )}
+    {(github || linkedin) && (
+      <ul class="links">
+        {github && <li><a href={github} rel="noopener">GitHub</a></li>}
+        {linkedin && <li><a href={linkedin} rel="noopener">LinkedIn</a></li>}
+      </ul>
+    )}
+  </section>
+
+  <section class="card">
+    <h2>หรือฝากข้อความไว้</h2>
+    <form id="contact-form" data-email={email || ''}>
+      <label for="topic">อยากคุยเรื่อง</label>
+      <select id="topic" name="topic">
+        {topics.map((t) => <option value={t}>{t}</option>)}
+      </select>
+      <label for="name">ชื่อ</label>
+      <input id="name" name="name" required maxlength="80" autocomplete="name" />
+      <label for="email">อีเมลของคุณ</label>
+      <input id="email" name="email" type="email" required maxlength="120" autocomplete="email" />
+      <label for="message">ข้อความ</label>
       <textarea id="message" name="message" rows="5" required maxlength="2000"></textarea>
-      <p style="margin-top:1rem"><button type="submit">Send</button></p>
-      <p id="status" role="status" aria-live="polite"></p>
+      <p style="margin-top:1rem"><button class="btn" type="submit">ส่งข้อความ</button></p>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
     </form>
   </section>
 </BaseLayout>
+
+<style>
+  .links { list-style: none; padding: 0; display: flex; gap: 1.25rem; }
+</style>
+
 <script>
-  const form = document.getElementById('contact-form');
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
   const status = document.getElementById('status');
+
+  function setStatus(kind: 'info' | 'ok' | 'error', text: string, email?: string) {
+    if (!status) return;
+    status.dataset.kind = kind;
+    status.textContent = text;
+    if (email) {
+      const a = document.createElement('a');
+      a.href = `mailto:${email}`;
+      a.textContent = email;
+      status.append(' ', a, ' ได้เลยครับ');
+    }
+  }
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
-    status.textContent = 'Sending…';
+    const email = form.dataset.email || '';
+    const fallback = () =>
+      email
+        ? setStatus('error', 'ตอนนี้ส่งผ่านฟอร์มไม่ได้ — ข้อความของคุณยังอยู่ ส่งอีเมลมาที่', email)
+        : setStatus('error', 'ตอนนี้ส่งผ่านฟอร์มไม่ได้ — ข้อความของคุณยังอยู่ ลองใหม่อีกครั้งภายหลังนะครับ');
+    const payload = Object.fromEntries(new FormData(form).entries());
+    setStatus('info', 'กำลังส่ง…');
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      status.textContent = res.ok ? 'Sent. Thank you!' : `Error: ${data.error || res.status}`;
-      if (res.ok) form.reset();
-    } catch (err) {
-      status.textContent = 'Network error';
+      if (res.ok) {
+        setStatus('ok', 'ได้รับข้อความแล้ว ขอบคุณครับ');
+        form.reset();
+      } else if (res.status === 400) {
+        setStatus('error', 'กรุณาตรวจชื่อ อีเมล และข้อความอีกครั้ง');
+      } else {
+        fallback();
+      }
+    } catch {
+      fallback();
     }
   });
 </script>
-

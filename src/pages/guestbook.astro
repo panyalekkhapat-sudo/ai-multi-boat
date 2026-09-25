@@ -1,46 +1,84 @@
 ---
+// Guestbook (D9, amended A1): linked from nav, but noindex until the backend
+// (Lab 05) adds length limits, spam guard and LIMIT on GET.
+// Rendering uses textContent only — never innerHTML with visitor data.
+// API errors are replaced with fixed messages (D6).
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="Guestbook">
+<BaseLayout title="สมุดเยี่ยม" noindex>
   <section class="card">
-    <h1>Guestbook</h1>
-    <p>ฝากข้อความไว้ได้ทางฟอร์มนี้ — อ่าน/เขียนผ่าน <code>/api/guestbook</code></p>
+    <h1>สมุดเยี่ยม</h1>
+    <p>ฝากคำทักทายสั้น ๆ ไว้ได้ครับ</p>
     <form id="gb-form">
-      <label for="name">Name</label>
+      <label for="name">ชื่อ</label>
       <input id="name" name="name" required maxlength="80" />
-      <label for="message">Message</label>
+      <label for="message">ข้อความ</label>
       <textarea id="message" name="message" rows="3" required maxlength="500"></textarea>
-      <p style="margin-top:1rem"><button type="submit">Sign</button></p>
+      <p style="margin-top:1rem"><button class="btn" type="submit">ฝากข้อความ</button></p>
+      <p id="gb-status" class="status" role="status" aria-live="polite"></p>
     </form>
-    <div id="entries" class="card" style="margin-top:1.25rem" aria-live="polite">Loading…</div>
+    <div id="entries" aria-live="polite">กำลังโหลด…</div>
   </section>
 </BaseLayout>
+
+<style>
+  #entries { margin-top: 1.25rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+</style>
+
 <script>
+  type Entry = { name?: unknown; message?: unknown; created_at?: unknown };
   const entries = document.getElementById('entries');
-  const form = document.getElementById('gb-form');
-  async function load() {
-    const res = await fetch('/api/guestbook');
-    const data = await res.json();
-    if (!res.ok) {
-      entries.textContent = data.error || `HTTP ${res.status}`;
+  const form = document.getElementById('gb-form') as HTMLFormElement | null;
+  const status = document.getElementById('gb-status');
+  const UNAVAILABLE = 'ตอนนี้สมุดเยี่ยมยังไม่พร้อมใช้งาน ลองใหม่ภายหลังนะครับ';
+
+  function renderEntries(list: Entry[]) {
+    if (!entries) return;
+    entries.replaceChildren();
+    if (!list.length) {
+      entries.textContent = 'ยังไม่มีข้อความ';
       return;
     }
-    entries.innerHTML = (data.entries || [])
-      .map((e) => `<p><strong>${e.name}</strong>: ${e.message}<br/><small>${e.created_at}</small></p>`)
-      .join('') || '<p>No entries yet.</p>';
+    for (const e of list) {
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      strong.textContent = String(e.name ?? '');
+      const small = document.createElement('small');
+      small.textContent = String(e.created_at ?? '');
+      p.append(strong, ': ', String(e.message ?? ''), document.createElement('br'), small);
+      entries.append(p);
+    }
   }
+
+  async function load() {
+    try {
+      const res = await fetch('/api/guestbook');
+      if (!res.ok) throw new Error('unavailable');
+      const data = await res.json();
+      renderEntries(Array.isArray(data.entries) ? data.entries : []);
+    } catch {
+      if (entries) entries.textContent = UNAVAILABLE;
+    }
+  }
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const payload = Object.fromEntries(new FormData(form).entries());
-    await fetch('/api/guestbook', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    form.reset();
-    await load();
+    try {
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('failed');
+      if (status) { status.dataset.kind = 'ok'; status.textContent = 'ขอบคุณสำหรับข้อความครับ'; }
+      form.reset();
+      await load();
+    } catch {
+      if (status) { status.dataset.kind = 'error'; status.textContent = UNAVAILABLE; }
+    }
   });
+
   load();
 </script>
-

@@ -1,9 +1,21 @@
 ---
+// Tone (PROFILE): minimal, white-grey, clean · professional but friendly.
+// Nav = 4 main items + Guestbook (D11 / D9, amended A1 2026-09-25 by owner).
+// Guestbook page itself stays noindex until Lab 05 server-side protections land.
 interface Props {
   title?: string;
   description?: string;
+  noindex?: boolean;
 }
-const { title = 'Personal Site', description = 'Personal branding site for the multi-agent course' } = Astro.props;
+const { title = 'Personal Site', description = 'เว็บไซต์ส่วนตัว', noindex = false } = Astro.props;
+const path = Astro.url.pathname;
+const links = [
+  { href: '/', label: 'หน้าแรก', current: path === '/' },
+  { href: '/about', label: 'เกี่ยวกับผม', current: path.startsWith('/about') },
+  { href: '/interests', label: 'สิ่งที่สนใจ', current: path.startsWith('/interests') },
+  { href: '/contact', label: 'ติดต่อ', current: path.startsWith('/contact') },
+  { href: '/guestbook', label: 'สมุดเยี่ยม', current: path.startsWith('/guestbook') },
+];
 ---
 <!doctype html>
 <html lang="th">
@@ -11,61 +23,78 @@ const { title = 'Personal Site', description = 'Personal branding site for the m
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
     <style is:global>
       :root {
-        --bg: #0b1020;
-        --card: #141a2f;
-        --text: #eef2ff;
-        --muted: #a5b4d4;
-        --accent: #7c9cff;
-        --border: #243056;
+        --bg: #f7f7f8;
+        --card: #ffffff;
+        --text: #18181b;
+        --muted: #52525b;
+        --accent: #3f3f46;
+        --accent-strong: #18181b;
+        --border: #e4e4e7;
+        --danger: #b42318;
+        --radius: 14px;
       }
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: "Segoe UI", system-ui, sans-serif;
-        background: radial-gradient(circle at top, #17203a, var(--bg) 45%);
+        font-family: "Segoe UI", "Noto Sans Thai", system-ui, sans-serif;
+        background: var(--bg);
         color: var(--text);
         min-height: 100vh;
       }
-      a { color: var(--accent); text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      main { width: min(920px, 92vw); margin: 0 auto; padding: 2rem 0 4rem; }
+      a { color: var(--accent-strong); text-underline-offset: 3px; }
+      a:hover { color: var(--muted); }
+      :focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 3px; }
+      header { background: var(--card); border-bottom: 1px solid var(--border); }
+      nav {
+        display: flex; gap: 1.25rem; flex-wrap: wrap;
+        width: min(760px, 92vw); margin: 0 auto; padding: 1rem 0;
+      }
+      nav a { color: var(--muted); font-weight: 600; text-decoration: none; padding: 0.15rem 0; }
+      nav a:hover { color: var(--text); }
+      nav a[aria-current="page"] { color: var(--text); border-bottom: 2px solid var(--text); }
+      main { width: min(760px, 92vw); margin: 0 auto; padding: 2.5rem 0 4rem; }
       .card {
-        background: color-mix(in srgb, var(--card) 92%, white 8%);
+        background: var(--card);
         border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 1.25rem 1.5rem;
+        border-radius: var(--radius);
+        padding: 1.5rem 1.75rem;
         margin: 1rem 0;
       }
-      nav {
-        display: flex; gap: 1rem; flex-wrap: wrap;
-        width: min(920px, 92vw); margin: 0 auto; padding: 1.25rem 0;
-        border-bottom: 1px solid var(--border);
+      h1, h2, h3 { line-height: 1.25; margin: 0 0 0.75rem; }
+      h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+      p, li { color: var(--muted); line-height: 1.75; }
+      .lead { font-size: 1.2rem; color: var(--text); }
+      .eyebrow { margin: 0 0 0.5rem; color: var(--muted); font-weight: 600; letter-spacing: 0.02em; }
+      .btn {
+        font: inherit; font-weight: 700;
+        display: inline-block; background: var(--accent-strong); color: #fff;
+        padding: 0.8rem 1.4rem; border-radius: 999px; text-decoration: none;
+        border: 0; cursor: pointer;
       }
-      nav a { color: var(--muted); font-weight: 600; }
-      nav a[aria-current="page"] { color: var(--text); }
-      h1, h2 { line-height: 1.2; }
-      p, li { color: var(--muted); line-height: 1.6; }
-      input, textarea, button {
+      .btn:hover { background: var(--accent); color: #fff; }
+      .muted-note { font-size: 0.95rem; margin-top: 0.75rem; }
+      input, textarea, select {
         font: inherit; border-radius: 10px; border: 1px solid var(--border);
-        background: #0f1528; color: var(--text); padding: 0.7rem 0.9rem; width: 100%;
+        background: #fff; color: var(--text); padding: 0.7rem 0.9rem; width: 100%;
       }
-      button { background: var(--accent); color: #081018; font-weight: 700; cursor: pointer; width: auto; }
-      label { display: block; margin: 0.75rem 0 0.35rem; color: var(--text); font-weight: 600; }
-      .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      label { display: block; margin: 0.9rem 0 0.35rem; color: var(--text); font-weight: 600; }
+      .status { min-height: 1.5em; }
+      .status[data-kind="error"] { color: var(--danger); }
     </style>
   </head>
   <body>
-    <nav aria-label="หลัก">
-      <a href="/" aria-current={Astro.url.pathname === '/' ? 'page' : undefined}>Home</a>
-      <a href="/about" aria-current={Astro.url.pathname.startsWith('/about') ? 'page' : undefined}>About</a>
-      <a href="/interests" aria-current={Astro.url.pathname.startsWith('/interests') ? 'page' : undefined}>Interests</a>
-      <a href="/contact" aria-current={Astro.url.pathname.startsWith('/contact') ? 'page' : undefined}>Contact</a>
-      <a href="/guestbook" aria-current={Astro.url.pathname.startsWith('/guestbook') ? 'page' : undefined}>Guestbook</a>
-    </nav>
+    <header>
+      <nav aria-label="หลัก">
+        {links.map((l) => (
+          <a href={l.href} aria-current={l.current ? 'page' : undefined}>{l.label}</a>
+        ))}
+      </nav>
+    </header>
     <main>
       <slot />
     </main>
