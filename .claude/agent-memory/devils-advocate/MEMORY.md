@@ -1,0 +1,1 @@
+- [Lab 02 debate stance](debate-lab02-stance.md) — ship gates, concessions, Lab04 vs Lab05 split, open questions (2026-09-25)

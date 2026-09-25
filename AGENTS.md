@@ -97,13 +97,26 @@ harness = ความสามารถถาวรที่ Claude Code / Open
 
 ```powershell
 npm install
-npm run dev
-npm test
-npm run test:labs
+npm run dev           # dev server ที่ http://127.0.0.1:4321
+npm test              # เฉพาะ tests/** — ไม่รวม tests/labs/**
+npm run test:labs     # เฉพาะ tests/labs/** — RED ตั้งแต่ template (stub ใน src/lib/db.ts throw NOT_IMPLEMENTED จน Lab 05 เขียนเอง)
+npm run test:e2e      # Playwright — ต้องมี dev server รันอยู่ก่อน (config ไม่ได้ start ให้) ที่ 127.0.0.1:4321
 npm run build
-npm start
-node scripts/create-course-issues.mjs
+npm start             # รัน dist/server/entry.mjs — ต้อง build ก่อน
+node scripts/create-course-issues.mjs   # ต้อง gh auth login ก่อน · สร้าง Issues ใน repo ผู้เรียนเท่านั้น
 ```
+
+CI (`.github/workflows/ci.yml`) รันแค่ `npm ci` → `npm test` → `npm run build` — **labs/E2E ไม่อยู่ใน CI** ต้องรันเอง
+
+## Stack facts (ตรวจจากโค้ดแล้ว — ไม่ต้องเดา)
+
+- Astro 7 + `@astrojs/node` **SSR** (`output: 'server'`) — ไม่ใช่ static · ทุกหน้าใน `src/pages/` · port 4321
+- Node **≥ 22.12** (engines) · SQLite ผ่าน `better-sqlite3`
+- DB = `$DATA_DIR/site.sqlite` (default `./data`, git-ignored) · `getDb()` ใน `src/lib/db.ts` เป็น **singleton ที่ค้าง config ครั้งแรก** → ตั้ง `DATA_DIR` ก่อนเรียก `getDb()` ครั้งแรก (ตารางสร้างอัตโนมัติ · tests/labs พึ่งพฤติกรรมนี้)
+- `src/lib/profile.ts` `loadProfile()` อ่าน `docs/PROFILE.md` แล้ว parse หัวข้อ `##` — bug ตัดหลายบรรทัดเหลือบรรทัดแรก = OPEN_LOOPS **L2** อย่าแก้ซ้ำถ้ามีคนถืออยู่
+- `tests/public-site.test.ts` **fail ทันทีถ้า markup ที่ render (.astro/.html) มีคำว่า "lab"/"แล็บ"** — เอ่ยถึงคอร์สได้เฉพาะ comment ใน `.ts` และไฟล์ใน `docs/` (นี่คือเหตุผลของ skill `public-site-safe`)
+- Template ไม่มี `opencode.json` / `.mcp.json` — มีแต่ `*.example` (github MCP ต้องการ `GITHUB_PERSONAL_ACCESS_TOKEN` จาก `.env`) · สร้างจริงใน Lab 00
+- OpenCode ต้องเป็น **v2** (`npm i -g @opencode/cli`) — winget ติดตั้ง v1 ซึ่ง TUI พัง · รายละเอียดเครื่องมือใน [`SETUP.md`](./SETUP.md)
 
 ## ห้าม
 

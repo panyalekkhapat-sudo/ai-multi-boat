@@ -1,0 +1,1 @@
+- [Lab 02 debate stance](debate_lab02_stance.md) — headline "รับช่วงต่อได้", conceded AI/Lighthouse/chips, open: GitHub proof + real email

@@ -1,0 +1,1 @@
+- [Lab 02 debate stance](debate_lab02_stance.md) — held/conceded/open questions after round 2 (single CTA, Contact no-dead-end, Interests "why")
