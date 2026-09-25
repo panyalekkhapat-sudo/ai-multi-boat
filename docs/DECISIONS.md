@@ -32,12 +32,12 @@
 | ID | วันที่ | แก้ Decision | สรุป | ผู้อนุมัติ |
 |---|---|---|---|---|
 | A1 | 2026-09-25 | D9 · D11 | อนุญาตลิงก์ Guestbook ("สมุดเยี่ยม") ใน nav · คง `textContent` + `noindex` · เงื่อนไข server-side (ความยาว · กันสแปม · LIMIT ใน GET) ยังเป็นของ OpenCode Lab 05 และเร่งขึ้นเพราะหน้าเข้าถึงได้จาก nav แล้ว | เจ้าของ repo (Panya) — เลือก "แก้ D9 ก่อนแล้วค่อยเพิ่มลิงก์" |
+| A2 | 2026-09-25 | D7 · D8 · D9 · D12(3) | **D9:** กันสแปม guestbook = honeypot field `website` (บอทได้ 202 เงียบ ๆ ไม่บันทึก) + จำกัด 5 โพสต์ / 10 นาที / IP ในหน่วยความจำ (ไม่เก็บ IP ลง DB) → 429 · ครบเงื่อนไข server-side แล้ว → **เอา `noindex` ออก** · โค้ด `src/lib/rate-limit.ts` + `src/pages/api/guestbook.ts` ทำโดย Claude แทน OpenCode (เจ้าของอนุมัติข้าม ownership ครั้งนี้) · **D7:** Claude ร่างเหตุผล Interests จาก Bio เดิม — เจ้าของแก้ได้ · **D8:** ตัด "หลายปี" แล้ว · **D12(3):** Dockerfile copy เฉพาะ `docs/PROFILE.md` · D12(1)(2) อีเมลจริง/GitHub เจ้าของขอคงไว้ก่อน | เจ้าของ repo (Panya) |
 
 ## สิ่งที่เลื่อนออก (Out of scope v1)
 
 - ชิปทางเข้าตาม Audience บน Home และ `/contact?topic=`
 - ฟอร์ม Contact เป็น Must (ย้ายเป็น Nice จนกว่า API ของ OpenCode จะพร้อม)
-- Guestbook สาธารณะเต็มรูปแบบ (ถูก index · ไม่มีกันสแปม) — ลิงก์ใน nav ได้แล้วตาม D9/A1 แต่คง `noindex` จน server-side ครบ
 - ตัวเลข Lighthouse บนเว็บ (ยกเว้นมีวันที่และเงื่อนไขกำกับ)
 - ลิงก์ "คุยเรื่องนี้ →" ในการ์ด Interests
 - คำสัญญาเวลาตอบกลับ

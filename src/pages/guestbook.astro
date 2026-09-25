@@ -1,12 +1,12 @@
 ---
-// Guestbook (D9, amended A1): linked from nav, but noindex until the backend
-// (Lab 05) adds length limits, spam guard and LIMIT on GET.
+// Guestbook (D9 / A1 / A2): linked from nav and indexable now that the server
+// has length limits, LIMIT on GET and a spam guard (honeypot + rate limit).
 // Rendering uses textContent only — never innerHTML with visitor data.
 // API errors are replaced with fixed messages (D6).
 export const prerender = false;
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="สมุดเยี่ยม" noindex>
+<BaseLayout title="สมุดเยี่ยม">
   <section class="card">
     <h1>สมุดเยี่ยม</h1>
     <p>ฝากคำทักทายสั้น ๆ ไว้ได้ครับ</p>
@@ -15,6 +15,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <input id="name" name="name" required maxlength="80" />
       <label for="message">ข้อความ</label>
       <textarea id="message" name="message" rows="3" required maxlength="500"></textarea>
+      <div class="hp" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" tabindex="-1" autocomplete="off" />
+      </div>
       <p style="margin-top:1rem"><button class="btn" type="submit">ฝากข้อความ</button></p>
       <p id="gb-status" class="status" role="status" aria-live="polite"></p>
     </form>
@@ -23,6 +27,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
+  .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
   #entries { margin-top: 1.25rem; border-top: 1px solid var(--border); padding-top: 1rem; }
 </style>
 
@@ -33,6 +38,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const status = document.getElementById('gb-status');
   const UNAVAILABLE = 'ตอนนี้สมุดเยี่ยมยังไม่พร้อมใช้งาน ลองใหม่ภายหลังนะครับ';
   const INPUT_MSG = 'กรุณาตรวจชื่อและข้อความอีกครั้ง (ข้อความยาวไม่เกิน 500 ตัวอักษร)';
+  const TOO_MANY_MSG = 'ส่งถี่เกินไปนิดครับ — ข้อความของคุณยังอยู่ ลองใหม่อีกสักครู่นะครับ';
 
   function renderEntries(list: Entry[]) {
     if (!entries) return;
@@ -72,8 +78,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (res.status === 400) {
-        if (status) { status.dataset.kind = 'error'; status.textContent = INPUT_MSG; }
+      if (res.status === 400 || res.status === 429) {
+        if (status) {
+          status.dataset.kind = 'error';
+          status.textContent = res.status === 400 ? INPUT_MSG : TOO_MANY_MSG;
+        }
         return;
       }
       if (!res.ok) throw new Error('failed');
