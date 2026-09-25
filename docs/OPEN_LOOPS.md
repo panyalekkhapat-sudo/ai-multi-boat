@@ -3,23 +3,25 @@
 > งานค้างที่ยังไม่ปิด · ลบแถวเมื่อเสร็จ  
 > Owner = `Claude` | `OpenCode` | `human`
 
-Last updated: 2026-09-25 +07:00 (swarm verify run)
+Last updated: 2026-09-25 +07:00 (รวม PR #5 + #6 — Claude)
 
 | ID | Task | Owner | Priority | Trigger / due | Notes |
 |---|---|---|---|---|---|
 | L1 | สร้าง STATUS + OPEN_LOOPS จาก example | human | P0 | Lab 00 | หลัง copy แล้วลบแถวนี้ |
-| L2 | `loadProfile()` ตัดหลายบรรทัดเหลือบรรทัดแรก (Bio, Interests) + parse `## Contact` | Claude (frontend) | P0 | Lab 04 | DECISIONS D10 · อย่าให้ Brainstorm/Do not show หลุด |
-| L4 | เนื้อหา PROFILE: ตัด "หลายปี" · เหตุผล Interests · อีเมลจริง + GitHub | human | P1 | ก่อน Lab 08 | DECISIONS D7, D8, D12 |
-| L5 | Guestbook ยังไม่เปิดสาธารณะ — FE ใช้ `textContent` แล้ว (round 3) · เหลือเจ้าของตัดสินใจเรื่องกันสแปม (rate limit) ถ้าจะเปิดจริง | human | P1 | ก่อน Lab 08 | DECISIONS D9 — server + FE ครบแล้ว |
-| L7 | ลิงก์ Guestbook ยังอยู่ใน nav (`BaseLayout.astro:67`) และการ์ดหน้าแรก (`index.astro:19`) — ขัด D9 | Claude (frontend) | P1 | Lab 04 / issue #1 | พบใน swarm verify run |
+| L4 | เนื้อหา PROFILE: ตัด "หลายปี" · เหตุผล Interests · อีเมลจริง + GitHub | human | P1 | ก่อน Lab 08 | DECISIONS D7, D8, D12 · UI รองรับแล้ว (เหตุผล/ลิงก์ว่างจะซ่อน) |
+| L5 | Guestbook กันสแปม (rate limit) — ความยาว + LIMIT + `textContent` ครบแล้ว · เอา `noindex` ออกได้เมื่อครบ | human → OpenCode | P1 | ก่อน Lab 08 | DECISIONS D9 / A1 |
+| L6 | D5 "แสดงฟอร์มเฉพาะเมื่อ API ใช้ได้จริง" — ฟอร์มแสดงเสมอแต่ไม่มีทางตัน (fallback mailto · ไม่ลบข้อความ) | Claude (frontend) | P2 | ก่อน Lab 08 | API เขียวแล้ว · ทบทวนตอน ship |
 | L8 | ติดตั้ง browser ของ Playwright (`npx playwright install`) แล้วรัน `npm run test:e2e` | human | P2 | Lab 06 | e2e fail เพราะไม่มี chromium |
+| L9 | Dockerfile copy เฉพาะ `docs/PROFILE.md` | OpenCode / human | P2 | Lab 08 | D12(3) |
 
 ## ปิดแล้ว (ย่อ — ย้ายหรือลบได้เมื่อรก)
 
 | ID | Task | Closed |
 |---|---|---|
-| L3 | API คืน error code แทน `err.message` (`BAD_JSON`/`VALIDATION`/`INTERNAL` · 501 stub ถูกแทนด้วย implementation จริง) | 2026-09-25 (OpenCode · Lab 05 · D6) |
-| L6 | `contact.astro` ข้อความ error คงที่ (D6) · network error ไม่ล้างฟอร์ม · ข้อความ 400 รอเจ้าของอนุมัติใน DECISIONS · อีเมลในข้อความรอ L2 | 2026-09-25 (Claude frontend · swarm round 3) |
+| L2 | `loadProfile()` หลายบรรทัด + `## Contact` + กัน Brainstorm/Do not show (D10) | 2026-09-25 · Claude (frontend) · PR #5 · `tests/profile.test.ts` |
+| L3 | API คืน error code แทน `err.message` (`BAD_JSON`/`VALIDATION`/`INTERNAL`) | 2026-09-25 · OpenCode · PR #6 · D6 |
+| L7 | ลิงก์ Guestbook ใน nav — ปิดตาม A1 (เจ้าของอนุมัติให้อยู่ใน nav · คง `noindex`) · การ์ดหน้าแรกถูกเอาออกแล้ว | 2026-09-25 · A1 |
+| — | `/api/contact` รับ field `topic` เกินมาได้ (ไม่ 400 · ไม่เก็บ) | 2026-09-25 · ตรวจตอน merge PR #5 |
 
 ## กฎสั้น
 
