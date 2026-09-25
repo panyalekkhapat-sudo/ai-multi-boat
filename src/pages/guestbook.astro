@@ -32,6 +32,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const form = document.getElementById('gb-form') as HTMLFormElement | null;
   const status = document.getElementById('gb-status');
   const UNAVAILABLE = 'ตอนนี้สมุดเยี่ยมยังไม่พร้อมใช้งาน ลองใหม่ภายหลังนะครับ';
+  const INPUT_MSG = 'กรุณาตรวจชื่อและข้อความอีกครั้ง (ข้อความยาวไม่เกิน 500 ตัวอักษร)';
 
   function renderEntries(list: Entry[]) {
     if (!entries) return;
@@ -71,6 +72,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      if (res.status === 400) {
+        if (status) { status.dataset.kind = 'error'; status.textContent = INPUT_MSG; }
+        return;
+      }
       if (!res.ok) throw new Error('failed');
       if (status) { status.dataset.kind = 'ok'; status.textContent = 'ขอบคุณสำหรับข้อความครับ'; }
       form.reset();
