@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 <BaseLayout title="Contact">
   <section class="card">
     <h1>Contact</h1>
-    <p>ฟอร์มนี้โพสต์ไปที่ <code>POST /api/contact</code></p>
+    <p>ฝากข้อความถึงผมได้ทางฟอร์มนี้ครับ</p>
     <form id="contact-form">
       <label for="name">Name</label>
       <input id="name" name="name" required maxlength="80" />
@@ -19,25 +19,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 <script>
-  const form = document.getElementById('contact-form');
+  const form = document.getElementById('contact-form') as HTMLFormElement | null;
   const status = document.getElementById('status');
+  const SUCCESS_MSG = 'ส่งแล้ว ขอบคุณครับ';
+  const INPUT_MSG = 'กรุณาตรวจชื่อ อีเมล และข้อความอีกครั้ง';
+  const FALLBACK_MSG = 'ตอนนี้ส่งผ่านฟอร์มไม่ได้ — ข้อความของคุณยังอยู่ ส่งอีเมลมาได้เลยครับ';
+
+  function setStatus(text: string) {
+    if (status) status.textContent = text;
+  }
+
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
-    status.textContent = 'Sending…';
+    const payload = Object.fromEntries(new FormData(form).entries());
+    setStatus('Sending…');
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      status.textContent = res.ok ? 'Sent. Thank you!' : `Error: ${data.error || res.status}`;
-      if (res.ok) form.reset();
-    } catch (err) {
-      status.textContent = 'Network error';
+      if (res.ok) {
+        setStatus(SUCCESS_MSG);
+        form.reset();
+        return;
+      }
+      // Never show server-provided messages; map to fixed copy only.
+      setStatus(res.status === 400 ? INPUT_MSG : FALLBACK_MSG);
+    } catch {
+      setStatus(FALLBACK_MSG);
     }
   });
 </script>
-
